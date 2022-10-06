@@ -1,14 +1,14 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 
-module Pizza.Lib.Control.Monad.CoroutineTests where
+module Grisette.Lib.Control.Monad.CoroutineTests where
 
 import Control.Monad.Coroutine hiding (merge)
 import Control.Monad.Coroutine.SuspensionFunctors
-import Pizza.Core
-import Pizza.Lib.Control.Monad
-import Pizza.Lib.Control.Monad.Coroutine.SuspensionFunctors ()
-import Pizza.TestUtils.SBool
+import Grisette.Core
+import Grisette.Lib.Control.Monad
+import Grisette.Lib.Control.Monad.Coroutine.SuspensionFunctors ()
+import Grisette.TestUtils.SBool
 import Test.Tasty
 import Test.Tasty.HUnit
 

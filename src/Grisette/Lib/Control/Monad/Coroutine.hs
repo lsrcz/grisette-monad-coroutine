@@ -6,11 +6,11 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module Pizza.Lib.Control.Monad.Coroutine where
+module Grisette.Lib.Control.Monad.Coroutine where
 
 import Control.Monad.Coroutine hiding (merge)
-import Pizza.Core
-import Pizza.Lib.Control.Monad
+import Grisette.Core
+import Grisette.Lib.Control.Monad
 
 liftCoroEitherMergingStrategy ::
   (SymBoolOp bool, Mergeable1 bool s, Mergeable1 bool m) =>

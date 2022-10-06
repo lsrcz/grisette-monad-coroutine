@@ -1,7 +1,7 @@
 module Main where
 
-import Pizza.Lib.Control.Monad.Coroutine.SuspensionFunctorsTests
-import Pizza.Lib.Control.Monad.CoroutineTests
+import Grisette.Lib.Control.Monad.Coroutine.SuspensionFunctorsTests
+import Grisette.Lib.Control.Monad.CoroutineTests
 import Test.Tasty
 import Test.Tasty.Ingredients
 import qualified Test.Tasty.Ingredients.ConsoleReporter as ConsoleReporter
@@ -13,9 +13,9 @@ main = defaultMainWithIngredients [composeReporters Reporter.ingredient ConsoleR
 tests :: TestTree
 tests =
   testGroup
-    "pizza-monad-coroutine"
+    "grisette-monad-coroutine"
     [ testGroup
-        "Pizza.Lib.Control.Monad"
+        "Grisette.Lib.Control.Monad"
         [ testGroup
             "Coroutine"
             [suspensionFunctorsTests],

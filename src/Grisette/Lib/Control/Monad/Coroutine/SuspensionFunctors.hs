@@ -2,13 +2,13 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module Pizza.Lib.Control.Monad.Coroutine.SuspensionFunctors where
+module Grisette.Lib.Control.Monad.Coroutine.SuspensionFunctors where
 
 import Control.Monad.Coroutine
 import Control.Monad.Coroutine.SuspensionFunctors
-import Pizza.Core
-import Pizza.Lib.Control.Monad
-import Pizza.Lib.Control.Monad.Coroutine
+import Grisette.Core
+import Grisette.Lib.Control.Monad
+import Grisette.Lib.Control.Monad.Coroutine
 
 instance (SymBoolOp bool, Mergeable bool x, Mergeable bool y) => Mergeable bool (Yield x y) where
   mergingStrategy = product2Strategy Yield (\(Yield x y) -> (x, y)) mergingStrategy mergingStrategy
