@@ -51,7 +51,7 @@ coroutineTests =
               _ -> assertFailure "Failed to merge Coroutine"
         ],
       testCase "Mergeable for Coroutine" $ do
-        let SimpleStrategy s = mergingStrategy :: MergingStrategy SBool (Coroutine (Yield SBool) (UnionMBase SBool) SBool)
+        let SimpleStrategy s = gmergingStrategy :: GMergingStrategy SBool (Coroutine (Yield SBool) (UnionMBase SBool) SBool)
         let a1 :: Coroutine (Yield SBool) (UnionMBase SBool) SBool =
               Coroutine (mrgReturn (Left (Yield (SSBool "a") (Coroutine (mrgReturn (Right $ SSBool "b"))))))
         let a2 :: Coroutine (Yield SBool) (UnionMBase SBool) SBool =
@@ -67,8 +67,8 @@ coroutineTests =
               Coroutine (mrgReturn (Left (Yield (SSBool "a") (Coroutine (mrgReturn (Right $ SSBool "b"))))))
         let a2 :: Coroutine (Yield SBool) (UnionMBase SBool) SBool =
               Coroutine (mrgReturn (Left (Yield (SSBool "c") (Coroutine (mrgReturn (Right $ SSBool "d"))))))
-        let Coroutine r = mrgIte (SSBool "e") a1 a2
-        let Coroutine r1 = mrgIte1 (SSBool "e") a1 a2
+        let Coroutine r = gmrgIte (SSBool "e") a1 a2
+        let Coroutine r1 = gmrgIte1 (SSBool "e") a1 a2
         let Coroutine ru1 = mrgIf (SSBool "e") a1 a2
         case r of
           SingleU (Left (Yield x (Coroutine (SingleU (Right y))))) -> do

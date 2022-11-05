@@ -37,13 +37,13 @@ suspensionFunctorsTests =
                 )
               ],
           testCase "Await SBool SBool" $ do
-            let SimpleStrategy s = mergingStrategy :: MergingStrategy SBool (Await SBool SBool)
+            let SimpleStrategy s = gmergingStrategy :: GMergingStrategy SBool (Await SBool SBool)
             let a1 = Await Not
             let a2 = Await (And (SSBool "a"))
             let Await a3 = s (SSBool "b") a1 a2
             a3 (SSBool "c") @=? ITE (SSBool "b") (Not (SSBool "c")) (And (SSBool "a") (SSBool "c")),
           testCase "Request SBool SBool SBool" $ do
-            let SimpleStrategy s = mergingStrategy :: MergingStrategy SBool (Request SBool SBool SBool)
+            let SimpleStrategy s = gmergingStrategy :: GMergingStrategy SBool (Request SBool SBool SBool)
             let a1 = Request (SSBool "a") Not
             let a2 = Request (SSBool "b") (And (SSBool "c"))
             let Request v3 a3 = s (SSBool "d") a1 a2

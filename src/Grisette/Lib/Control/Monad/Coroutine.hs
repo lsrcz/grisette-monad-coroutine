@@ -13,49 +13,49 @@ import Grisette.Core
 import Grisette.Lib.Control.Monad
 
 liftCoroEitherMergingStrategy ::
-  (SymBoolOp bool, Mergeable1 bool s, Mergeable1 bool m) =>
-  MergingStrategy bool x ->
-  MergingStrategy bool (Either (s (Coroutine s m x)) x)
+  (SymBoolOp bool, GMergeable1 bool s, GMergeable1 bool m) =>
+  GMergingStrategy bool x ->
+  GMergingStrategy bool (Either (s (Coroutine s m x)) x)
 liftCoroEitherMergingStrategy ms =
-  liftMergingStrategy2 (liftMergingStrategy (liftMergingStrategy ms)) ms
+  liftGMergingStrategy2 (liftGMergingStrategy (liftGMergingStrategy ms)) ms
 
 coroEitherMergingStrategy ::
-  (SymBoolOp bool, Mergeable1 bool s, Mergeable1 bool m, Mergeable bool x) =>
-  MergingStrategy bool (Either (s (Coroutine s m x)) x)
-coroEitherMergingStrategy = liftMergingStrategy2 mergingStrategy1 mergingStrategy
+  (SymBoolOp bool, GMergeable1 bool s, GMergeable1 bool m, GMergeable bool x) =>
+  GMergingStrategy bool (Either (s (Coroutine s m x)) x)
+coroEitherMergingStrategy = liftGMergingStrategy2 gmergingStrategy1 gmergingStrategy
 
 instance
-  (SymBoolOp bool, Mergeable1 bool m, Mergeable bool a, Mergeable1 bool sus) =>
-  Mergeable bool (Coroutine sus m a)
+  (SymBoolOp bool, GMergeable1 bool m, GMergeable bool a, GMergeable1 bool sus) =>
+  GMergeable bool (Coroutine sus m a)
   where
-  mergingStrategy =
-    wrapStrategy
-      (liftMergingStrategy coroEitherMergingStrategy)
+  gmergingStrategy =
+    gwrapStrategy
+      (liftGMergingStrategy coroEitherMergingStrategy)
       Coroutine
       (\(Coroutine v) -> v)
 
-instance (SymBoolOp bool, Mergeable1 bool m, Mergeable1 bool sus) => Mergeable1 bool (Coroutine sus m) where
-  liftMergingStrategy m =
-    wrapStrategy
-      (liftMergingStrategy $ liftCoroEitherMergingStrategy m)
+instance (SymBoolOp bool, GMergeable1 bool m, GMergeable1 bool sus) => GMergeable1 bool (Coroutine sus m) where
+  liftGMergingStrategy m =
+    gwrapStrategy
+      (liftGMergingStrategy $ liftCoroEitherMergingStrategy m)
       Coroutine
       (\(Coroutine v) -> v)
 
 instance
-  (SymBoolOp bool, UnionLike bool m, Mergeable bool a, Mergeable1 bool sus) =>
-  SimpleMergeable bool (Coroutine sus m a)
+  (SymBoolOp bool, GUnionLike bool m, GMergeable bool a, GMergeable1 bool sus) =>
+  GSimpleMergeable bool (Coroutine sus m a)
   where
-  mrgIte = mrgIf
+  gmrgIte = mrgIf
 
 instance
-  (SymBoolOp bool, UnionLike bool m, Mergeable1 bool sus) =>
-  SimpleMergeable1 bool (Coroutine sus m)
+  (SymBoolOp bool, GUnionLike bool m, GMergeable1 bool sus) =>
+  GSimpleMergeable1 bool (Coroutine sus m)
   where
-  liftMrgIte m = mrgIfWithStrategy (SimpleStrategy m)
+  liftGMrgIte m = mrgIfWithStrategy (SimpleStrategy m)
 
 instance
-  (SymBoolOp bool, UnionLike bool m, Mergeable1 bool sus) =>
-  UnionLike bool (Coroutine sus m)
+  (SymBoolOp bool, GUnionLike bool m, GMergeable1 bool sus) =>
+  GUnionLike bool (Coroutine sus m)
   where
   mergeWithStrategy s ((Coroutine v) :: Coroutine sus m a) =
     Coroutine $ mergeWithStrategy (liftCoroEitherMergingStrategy s) v
@@ -66,14 +66,14 @@ instance
     Coroutine $ unionIf cond t f
 
 instance
-  (Monoid symbolSet, ExtractSymbolics symbolSet (m (Either (sus (Coroutine sus m a)) a))) =>
-  ExtractSymbolics symbolSet (Coroutine sus m a)
+  (Monoid symbolSet, GExtractSymbolics symbolSet (m (Either (sus (Coroutine sus m a)) a))) =>
+  GExtractSymbolics symbolSet (Coroutine sus m a)
   where
-  extractSymbolics (Coroutine v) = extractSymbolics v
+  gextractSymbolics (Coroutine v) = gextractSymbolics v
 
 mrgSuspend ::
   forall m s bool x.
-  (Functor s, MonadUnion bool m, SymBoolOp bool, Mergeable bool x, Mergeable1 bool s) =>
+  (Functor s, GMonadUnion bool m, SymBoolOp bool, GMergeable bool x, GMergeable1 bool s) =>
   s (Coroutine s m x) ->
   Coroutine s m x
 mrgSuspend s =
@@ -85,7 +85,7 @@ mrgSuspend s =
 
 mrgMapMonad ::
   forall s m m' bool x.
-  (Functor s, SymBoolOp bool, Mergeable1 bool s, Mergeable bool x, Monad m, MonadUnion bool m') =>
+  (Functor s, SymBoolOp bool, GMergeable1 bool s, GMergeable bool x, Monad m, GMonadUnion bool m') =>
   (forall y. m y -> m' y) ->
   Coroutine s m x ->
   Coroutine s m' x
@@ -106,7 +106,7 @@ mrgMapMonad f (Coroutine r) =
 
 mrgMapSuspension ::
   forall s m bool x s'.
-  (Functor s, SymBoolOp bool, MonadUnion bool m, Mergeable bool x, Mergeable1 bool s') =>
+  (Functor s, SymBoolOp bool, GMonadUnion bool m, GMergeable bool x, GMergeable1 bool s') =>
   (forall y. s y -> s' y) ->
   Coroutine s m x ->
   Coroutine s' m x
@@ -124,7 +124,7 @@ mrgMapSuspension f (Coroutine r) =
 
 mrgMapFirstSuspension ::
   forall s m bool x.
-  (Functor s, SymBoolOp bool, Mergeable1 bool s, MonadUnion bool m, Mergeable bool x) =>
+  (Functor s, SymBoolOp bool, GMergeable1 bool s, GMonadUnion bool m, GMergeable bool x) =>
   (forall y. s y -> s y) ->
   Coroutine s m x ->
   Coroutine s m x
@@ -137,20 +137,20 @@ mrgMapFirstSuspension f (Coroutine r) =
             Left x -> Left $ f x
     }
 
-instance Mergeable bool (Naught x) where
-  mergingStrategy = SimpleStrategy mrgIte
+instance GMergeable bool (Naught x) where
+  gmergingStrategy = SimpleStrategy gmrgIte
 
-instance Mergeable1 bool Naught where
-  liftMergingStrategy _ = SimpleStrategy mrgIte
+instance GMergeable1 bool Naught where
+  liftGMergingStrategy _ = SimpleStrategy gmrgIte
 
-instance SimpleMergeable bool (Naught x) where
-  mrgIte _ x _ = x
+instance GSimpleMergeable bool (Naught x) where
+  gmrgIte _ x _ = x
 
-instance SimpleMergeable1 bool Naught where
-  liftMrgIte _ _ x _ = x
+instance GSimpleMergeable1 bool Naught where
+  liftGMrgIte _ _ x _ = x
 
 runCoroutine ::
-  (SymBoolOp bool, MonadUnion bool m, Mergeable bool x) =>
+  (SymBoolOp bool, GMonadUnion bool m, GMergeable bool x) =>
   Coroutine Naught m x ->
   m x
 runCoroutine (Coroutine r) = do
@@ -160,7 +160,7 @@ runCoroutine (Coroutine r) = do
     Right x -> mrgReturn x
 
 mrgBounce ::
-  (Functor s, SymBoolOp bool, Mergeable1 bool s, MonadUnion bool m, Mergeable bool x) =>
+  (Functor s, SymBoolOp bool, GMergeable1 bool s, GMonadUnion bool m, GMergeable bool x) =>
   (s (Coroutine s m x) -> Coroutine s m x) ->
   Coroutine s m x ->
   Coroutine s m x
@@ -171,7 +171,7 @@ mrgBounce f (Coroutine r) = Coroutine $ mergeWithStrategy coroEitherMergingStrat
     Right x -> return $ Right x
 
 mrgPogoStick ::
-  (MonadUnion bool m, Mergeable bool x) =>
+  (GMonadUnion bool m, GMergeable bool x) =>
   (s (Coroutine s m x) -> Coroutine s m x) ->
   Coroutine s m x ->
   m x
@@ -182,7 +182,7 @@ mrgPogoStick f (Coroutine r) = do
     Right v -> mrgReturn v
 
 mrgPogoStickM ::
-  (MonadUnion bool m, Mergeable bool x) =>
+  (GMonadUnion bool m, GMergeable bool x) =>
   (s (Coroutine s m x) -> m (Coroutine s m x)) ->
   Coroutine s m x ->
   m x
@@ -195,7 +195,7 @@ mrgPogoStickM f (Coroutine r) = do
     Right v -> mrgReturn v
 
 mrgFoldRun ::
-  (MonadUnion bool m, SymBoolOp bool, Mergeable bool x, Mergeable bool a) =>
+  (GMonadUnion bool m, SymBoolOp bool, GMergeable bool x, GMergeable bool a) =>
   (a -> s (Coroutine s m x) -> (a, Coroutine s m x)) ->
   a ->
   Coroutine s m x ->
@@ -208,9 +208,9 @@ mrgFoldRun f a (Coroutine r) = do
     Right v -> mrgReturn (a, v)
 
 type MrgPairBinder bool m =
-  forall x y r. (Mergeable bool r) => (x -> y -> m r) -> m x -> m y -> m r
+  forall x y r. (GMergeable bool r) => (x -> y -> m r) -> m x -> m y -> m r
 
-mrgSequentialBinder :: (SymBoolOp bool, MonadUnion bool m) => MrgPairBinder bool m
+mrgSequentialBinder :: (SymBoolOp bool, GMonadUnion bool m) => MrgPairBinder bool m
 mrgSequentialBinder f ma mb = merge $ do
   a <- ma
   b <- mb
