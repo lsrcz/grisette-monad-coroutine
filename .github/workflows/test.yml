@@ -131,3 +131,5 @@ jobs:
 
     - name: Send coverage report
       uses: codecov/codecov-action@v3
+      if: matrix.os == 'ubuntu-latest' && matrix.plan.ismain
+
