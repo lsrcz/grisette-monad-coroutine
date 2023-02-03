@@ -1,0 +1,7 @@
+cradle:
+  stack:
+    components:
+    - path: "src"
+      component: "grisette-monad-coroutine:lib"
+    - path: "test"
+      component: "grisette-monad-coroutine:test:spec"

@@ -10,35 +10,35 @@ import Grisette.Core
 import Grisette.Lib.Control.Monad
 import Grisette.Lib.Control.Monad.Coroutine
 
-instance (SymBoolOp bool, GMergeable bool x, GMergeable bool y) => GMergeable bool (Yield x y) where
-  gmergingStrategy = gproduct2Strategy Yield (\(Yield x y) -> (x, y)) gmergingStrategy gmergingStrategy
+instance (Mergeable x, Mergeable y) => Mergeable (Yield x y) where
+  rootStrategy = product2Strategy Yield (\(Yield x y) -> (x, y)) rootStrategy rootStrategy
 
-instance (SymBoolOp bool, GMergeable bool x) => GMergeable1 bool (Yield x) where
-  liftGMergingStrategy = gproduct2Strategy Yield (\(Yield x y) -> (x, y)) gmergingStrategy
+instance (Mergeable x) => Mergeable1 (Yield x) where
+  liftRootStrategy = product2Strategy Yield (\(Yield x y) -> (x, y)) rootStrategy
 
-instance (SymBoolOp bool, GMergeable bool x, GMergeable bool y) => GMergeable bool (Await x y) where
-  gmergingStrategy = gwrapStrategy gmergingStrategy Await (\(Await x) -> x)
+instance (Mergeable x, Mergeable y) => Mergeable (Await x y) where
+  rootStrategy = wrapStrategy rootStrategy Await (\(Await x) -> x)
 
-instance (SymBoolOp bool, GMergeable bool x) => GMergeable1 bool (Await x) where
-  liftGMergingStrategy m = gwrapStrategy (liftGMergingStrategy m) Await (\(Await x) -> x)
+instance (Mergeable x) => Mergeable1 (Await x) where
+  liftRootStrategy m = wrapStrategy (liftRootStrategy m) Await (\(Await x) -> x)
 
 instance
-  (SymBoolOp bool, GMergeable bool req, GMergeable bool res, GMergeable bool x) =>
-  GMergeable bool (Request req res x)
+  (Mergeable req, Mergeable res, Mergeable x) =>
+  Mergeable (Request req res x)
   where
-  gmergingStrategy = gproduct2Strategy Request (\(Request x y) -> (x, y)) gmergingStrategy gmergingStrategy
+  rootStrategy = product2Strategy Request (\(Request x y) -> (x, y)) rootStrategy rootStrategy
 
-instance (SymBoolOp bool, GMergeable bool req, GMergeable bool res) => GMergeable1 bool (Request req res) where
-  liftGMergingStrategy m = gproduct2Strategy Request (\(Request x y) -> (x, y)) gmergingStrategy (liftGMergingStrategy m)
+instance (Mergeable req, Mergeable res) => Mergeable1 (Request req res) where
+  liftRootStrategy m = product2Strategy Request (\(Request x y) -> (x, y)) rootStrategy (liftRootStrategy m)
 
-mrgYield :: (SymBoolOp bool, GMonadUnion bool m, GMergeable bool x) => x -> Coroutine (Yield x) m ()
+mrgYield :: (MonadUnion m, Mergeable x) => x -> Coroutine (Yield x) m ()
 mrgYield x = mrgSuspend (Yield x $ mrgReturn ())
 {-# INLINEABLE mrgYield #-}
 
-mrgAwait :: (SymBoolOp bool, GMonadUnion bool m, GMergeable bool x) => Coroutine (Await x) m x
+mrgAwait :: (MonadUnion m, Mergeable x) => Coroutine (Await x) m x
 mrgAwait = mrgSuspend (Await mrgReturn)
 {-# INLINEABLE mrgAwait #-}
 
-mrgRequest :: (SymBoolOp bool, GMonadUnion bool m, GMergeable bool x, GMergeable bool y) => x -> Coroutine (Request x y) m y
+mrgRequest :: (MonadUnion m, Mergeable x, Mergeable y) => x -> Coroutine (Request x y) m y
 mrgRequest x = mrgSuspend (Request x mrgReturn)
 {-# INLINEABLE mrgRequest #-}
