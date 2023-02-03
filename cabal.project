@@ -1,0 +1,2 @@
+packages: grisette-monad-coroutine.cabal
+allow-newer: all
