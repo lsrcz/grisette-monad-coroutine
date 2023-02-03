@@ -25,7 +25,7 @@ coroutineTests =
                           "a"
                           (single $ Left $ Yield "b" $ Coroutine $ single $ Right "c")
                           (single $ Left $ Yield "d" $ Coroutine $ single $ Right "e") ::
-                        Coroutine (Yield SymBool) (UnionM) SymBool
+                        Coroutine (Yield SymBool) UnionM SymBool
                     )
             case v of
               SingleU (Left (Yield x (Coroutine (SingleU (Right y))))) -> do
