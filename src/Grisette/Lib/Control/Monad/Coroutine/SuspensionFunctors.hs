@@ -2,6 +2,14 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
+-- |
+-- Module      :   Grisette.Lib.Control.Monad.Coroutine.SuspensionFunctors
+-- Copyright   :   (c) Sirui Lu 2021-2023
+-- License     :   BSD-3-Clause (see the LICENSE file)
+--
+-- Maintainer  :   siruilu@cs.washington.edu
+-- Stability   :   Experimental
+-- Portability :   GHC only
 module Grisette.Lib.Control.Monad.Coroutine.SuspensionFunctors
   ( mrgYield,
     mrgAwait,
