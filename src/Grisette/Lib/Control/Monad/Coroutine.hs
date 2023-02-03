@@ -6,7 +6,20 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module Grisette.Lib.Control.Monad.Coroutine where
+module Grisette.Lib.Control.Monad.Coroutine
+  ( mrgSuspend,
+    mrgMapMonad,
+    mrgMapSuspension,
+    mrgMapFirstSuspension,
+    mrgRunCoroutine,
+    mrgBounce,
+    mrgPogoStick,
+    mrgPogoStickM,
+    mrgFoldRun,
+    MrgPairBinder,
+    mrgSequentialBinder,
+  )
+where
 
 import Control.Monad.Coroutine hiding (merge)
 import Grisette.Core
@@ -71,6 +84,8 @@ instance
   where
   extractSymbolics (Coroutine v) = extractSymbolics v
 
+-- | Symbolic version of 'Control.Monad.Coroutine.suspend',
+-- the result would be merged and propagate the mergeable knowledge.
 mrgSuspend ::
   forall m s x.
   (Functor s, MonadUnion m, Mergeable x, Mergeable1 s) =>
@@ -83,6 +98,8 @@ mrgSuspend s =
     $ return (Left s)
 {-# INLINEABLE mrgSuspend #-}
 
+-- | Symbolic version of 'Control.Monad.Coroutine.mapMonad',
+-- the result would be merged and propagate the mergeable knowledge.
 mrgMapMonad ::
   forall s m m' x.
   (Functor s, Mergeable1 s, Mergeable x, Monad m, MonadUnion m') =>
@@ -104,6 +121,8 @@ mrgMapMonad f (Coroutine r) =
     map' (Left s) = Left $ mrgMapMonad f <$> s
 {-# INLINEABLE mrgMapMonad #-}
 
+-- | Symbolic version of 'Control.Monad.Coroutine.mapSuspension',
+-- the result would be merged and propagate the mergeable knowledge.
 mrgMapSuspension ::
   forall s m x s'.
   (Functor s, MonadUnion m, Mergeable x, Mergeable1 s') =>
@@ -122,6 +141,8 @@ mrgMapSuspension f (Coroutine r) =
     map' (Left s) = Left $ f $ mrgMapSuspension f <$> s
 {-# INLINEABLE mrgMapSuspension #-}
 
+-- | Symbolic version of 'Control.Monad.Coroutine.mapFirstSuspension',
+-- the result would be merged and propagate the mergeable knowledge.
 mrgMapFirstSuspension ::
   forall s m x.
   (Functor s, Mergeable1 s, MonadUnion m, Mergeable x) =>
@@ -149,16 +170,20 @@ instance SimpleMergeable (Naught x) where
 instance SimpleMergeable1 Naught where
   liftMrgIte _ _ x _ = x
 
-runCoroutine ::
+-- | Symbolic version of 'Control.Monad.Coroutine.mapFirstSuspension',
+-- the result would be merged and propagate the mergeable knowledge.
+mrgRunCoroutine ::
   (MonadUnion m, Mergeable x) =>
   Coroutine Naught m x ->
   m x
-runCoroutine (Coroutine r) = do
+mrgRunCoroutine (Coroutine r) = do
   v <- r
   case v of
     Left _ -> error "Won't happen"
     Right x -> mrgReturn x
 
+-- | Symbolic version of 'Control.Monad.Coroutine.bounce',
+-- the result would be merged and propagate the mergeable knowledge.
 mrgBounce ::
   (Functor s, Mergeable1 s, MonadUnion m, Mergeable x) =>
   (s (Coroutine s m x) -> Coroutine s m x) ->
@@ -170,6 +195,8 @@ mrgBounce f (Coroutine r) = Coroutine $ mergeWithStrategy coroEitherMergingStrat
     Left s -> resume $ f s
     Right x -> return $ Right x
 
+-- | Symbolic version of 'Control.Monad.Coroutine.pogoStick',
+-- the result would be merged and propagate the mergeable knowledge.
 mrgPogoStick ::
   (MonadUnion m, Mergeable x) =>
   (s (Coroutine s m x) -> Coroutine s m x) ->
@@ -181,6 +208,8 @@ mrgPogoStick f (Coroutine r) = do
     Left h -> mrgPogoStick f $ f h
     Right v -> mrgReturn v
 
+-- | Symbolic version of 'Control.Monad.Coroutine.pogoStickM',
+-- the result would be merged and propagate the mergeable knowledge.
 mrgPogoStickM ::
   (MonadUnion m, Mergeable x) =>
   (s (Coroutine s m x) -> m (Coroutine s m x)) ->
@@ -194,6 +223,8 @@ mrgPogoStickM f (Coroutine r) = do
       mrgPogoStickM f cs
     Right v -> mrgReturn v
 
+-- | Symbolic version of 'Control.Monad.Coroutine.foldRun',
+-- the result would be merged and propagate the mergeable knowledge.
 mrgFoldRun ::
   (MonadUnion m, Mergeable x, Mergeable a) =>
   (a -> s (Coroutine s m x) -> (a, Coroutine s m x)) ->
@@ -207,9 +238,13 @@ mrgFoldRun f a (Coroutine r) = do
       (a1, c1) -> mrgFoldRun f a1 c1
     Right v -> mrgReturn (a, v)
 
+-- | Type of functions that can bind two monadic values together, used to
+-- combine two coroutines' step results. The result type needs to be mergeable.
 type MrgPairBinder bool m =
   forall x y r. (Mergeable r) => (x -> y -> m r) -> m x -> m y -> m r
 
+-- | Symbolic version of 'Control.Monad.Coroutine.sequentialBinder',
+-- the result would be merged and propagate the mergeable knowledge.
 mrgSequentialBinder :: (MonadUnion m) => MrgPairBinder bool m
 mrgSequentialBinder f ma mb = merge $ do
   a <- ma
