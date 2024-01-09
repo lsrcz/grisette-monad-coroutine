@@ -1,5 +1,5 @@
 name: grisette-monad-coroutine
-version: 0.1.0.0
+version: 0.2.0.0
 synopsis: Support for monad-coroutine package with Grisette
 description: Orphan instances and wrappers for monad-coroutine package with Grisette.
 category: Formal Methods, Theorem Provers, Symbolic Computation, SMT
@@ -8,28 +8,30 @@ maintainer: Sirui Lu (siruilu@cs.washington.edu)
 license: BSD3
 license-file: LICENSE
 github: lsrcz/grisette-monad-coroutine
-copyright: "2021-2023 Sirui Lu"
+copyright: "2021-2024 Sirui Lu"
 extra-source-files:
-- README.md
-- CHANGELOG.md
+  - README.md
+  - CHANGELOG.md
 
 dependencies:
-- base > 4.14 && < 5
-- grisette >= 0.1.0 && < 0.2
-- mtl >= 2.2.2 && < 2.3
-- transformers >= 0.5.6.2 && < 0.6
-- monad-coroutine >= 0.9.0.4 && < 9.3
+  - base > 4.14 && < 5
+  - grisette >= 0.4.0 && < 0.5
+  - mtl >= 2.2.2 && < 2.4
+  - transformers >= 0.5.6.2 && < 0.7
+  - monad-coroutine >= 0.9.0.4 && < 9.3
 
-flags: {
-  fast: {
-    description: "Compile with O2 optimization",
-    manual: False,
-    default: True,
+flags:
+  {
+    optimize:
+      {
+        description: "Compile with O2 optimization",
+        manual: False,
+        default: True,
+      },
   }
-}
 
 when:
-  - condition: flag(fast)
+  - condition: flag(optimize)
     then:
       ghc-options: -O2
     else:
@@ -46,7 +48,8 @@ tests:
     source-dirs: test
     dependencies:
       - grisette-monad-coroutine
-      - tasty >= 1.1.0.3 && < 1.5
-      - tasty-hunit >= 0.10 && < 0.11
-      - tasty-test-reporter >= 0.1.1.2 && < 0.2
-      - tasty-quickcheck >= 0.10.1 && < 0.11
+      - test-framework >= 0.8.2 && < 0.9
+      - test-framework-hunit >= 0.3.0.2 && < 0.4
+      - test-framework-quickcheck2 >= 0.3.0.5 && < 0.4
+      - HUnit >= 1.6 && < 1.7
+      - QuickCheck >= 2.13.2 && < 2.15

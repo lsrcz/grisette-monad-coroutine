@@ -8,10 +8,11 @@ import Control.Monad.Coroutine hiding (merge)
 import Control.Monad.Coroutine.SuspensionFunctors
 import Grisette
 import Grisette.Lib.Control.Monad.Coroutine.SuspensionFunctors ()
-import Test.Tasty
-import Test.Tasty.HUnit
+import Test.Framework
+import Test.Framework.Providers.HUnit
+import Test.HUnit (assertFailure, (@?=))
 
-coroutineTests :: TestTree
+coroutineTests :: Test
 coroutineTests =
   testGroup
     "CoroutineTests"
@@ -28,13 +29,13 @@ coroutineTests =
                         Coroutine (Yield SymBool) UnionM SymBool
                     )
             case v of
-              SingleU (Left (Yield x (Coroutine (SingleU (Right y))))) -> do
-                x @=? ites "a" "b" "d"
-                y @=? ites "a" "c" "e"
+              Single (Left (Yield x (Coroutine (Single (Right y))))) -> do
+                x @?= symIte "a" "b" "d"
+                y @?= symIte "a" "c" "e"
               _ -> assertFailure "Failed to merge Coroutine",
           testCase "mrgReturn" $ do
             case (mrgReturn 1 :: Coroutine (Yield SymBool) UnionM Integer) of
-              Coroutine (SingleU (Right 1)) -> return ()
+              Coroutine (Single (Right 1)) -> return ()
               _ -> assertFailure "mrgReturn for Coroutine is not working",
           testCase "mrgIf" $ do
             let Coroutine v =
@@ -44,9 +45,9 @@ coroutineTests =
                     (Coroutine $ single $ Left $ Yield "d" $ Coroutine $ single $ Right "e") ::
                     Coroutine (Yield SymBool) UnionM SymBool
             case v of
-              SingleU (Left (Yield x (Coroutine (SingleU (Right y))))) -> do
-                x @=? ites "a" "b" "d"
-                y @=? ites "a" "c" "e"
+              Single (Left (Yield x (Coroutine (Single (Right y))))) -> do
+                x @?= symIte "a" "b" "d"
+                y @?= symIte "a" "c" "e"
               _ -> assertFailure "Failed to merge Coroutine"
         ],
       testCase "Mergeable for Coroutine" $ do
@@ -57,9 +58,9 @@ coroutineTests =
               Coroutine (mrgReturn (Left (Yield "c" (Coroutine (mrgReturn (Right "d"))))))
         let Coroutine r = s "e" a1 a2
         case r of
-          SingleU (Left (Yield x (Coroutine (SingleU (Right y))))) -> do
-            x @=? ites "e" "a" "c"
-            y @=? ites "e" "b" "d"
+          Single (Left (Yield x (Coroutine (Single (Right y))))) -> do
+            x @?= symIte "e" "a" "c"
+            y @?= symIte "e" "b" "d"
           _ -> assertFailure "Bad shape",
       testCase "SimpleMergeable for Coroutine" $ do
         let a1 :: Coroutine (Yield SymBool) UnionM SymBool =
@@ -70,18 +71,18 @@ coroutineTests =
         let Coroutine r1 = mrgIte1 "e" a1 a2
         let Coroutine ru1 = mrgIf "e" a1 a2
         case r of
-          SingleU (Left (Yield x (Coroutine (SingleU (Right y))))) -> do
-            x @=? ites "e" "a" "c"
-            y @=? ites "e" "b" "d"
+          Single (Left (Yield x (Coroutine (Single (Right y))))) -> do
+            x @?= symIte "e" "a" "c"
+            y @?= symIte "e" "b" "d"
           _ -> assertFailure "Bad shape"
         case r1 of
-          SingleU (Left (Yield x (Coroutine (SingleU (Right y))))) -> do
-            x @=? ites "e" "a" "c"
-            y @=? ites "e" "b" "d"
+          Single (Left (Yield x (Coroutine (Single (Right y))))) -> do
+            x @?= symIte "e" "a" "c"
+            y @?= symIte "e" "b" "d"
           _ -> assertFailure "Bad shape"
         case ru1 of
-          SingleU (Left (Yield x (Coroutine (SingleU (Right y))))) -> do
-            x @=? ites "e" "a" "c"
-            y @=? ites "e" "b" "d"
+          Single (Left (Yield x (Coroutine (Single (Right y))))) -> do
+            x @?= symIte "e" "a" "c"
+            y @?= symIte "e" "b" "d"
           _ -> assertFailure "Bad shape"
     ]
